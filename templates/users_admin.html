@@ -1,0 +1,687 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Users - Face Recognition Dashboard</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+    * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    }
+
+    body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: #f5f7fa;
+    min-height: 100vh;
+    }
+
+    .navbar {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 1rem 2rem;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .navbar-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    max-width: 1200px;
+    margin: 0 auto;
+    }
+
+    .navbar-brand {
+    font-size: 1.5rem;
+    font-weight: 600;
+    }
+
+    .navbar-brand i {
+    margin-right: 10px;
+    }
+
+    .navbar-nav {
+    display: flex;
+    gap: 20px;
+    align-items: center;
+    }
+
+    .nav-link {
+    color: white;
+    text-decoration: none;
+    padding: 8px 16px;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    }
+
+    .nav-link:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: translateY(-2px);
+    }
+
+    .nav-link.active {
+    background: rgba(255, 255, 255, 0.3);
+    }
+
+    .container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem;
+    }
+
+    .page-header {
+    background: white;
+    padding: 2rem;
+    border-radius: 15px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+    margin-bottom: 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    }
+
+    .page-title {
+    font-size: 2rem;
+    color: #333;
+    margin-bottom: 0.5rem;
+    }
+
+    .page-subtitle {
+    color: #666;
+    font-size: 1rem;
+    }
+
+    .btn {
+    padding: 12px 24px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    font-size: 0.9rem;
+    }
+
+    .btn-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    }
+
+    .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+    }
+
+    .btn-danger {
+    background: #dc3545;
+    color: white;
+    padding: 8px 16px;
+    font-size: 0.8rem;
+    }
+
+    .btn-danger:hover {
+    background: #c82333;
+    transform: scale(1.05);
+    }
+
+    .users-container {
+    background: white;
+    border-radius: 15px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+    overflow: hidden;
+    }
+
+    .users-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 1.5rem 2rem;
+    }
+
+    .users-title {
+    font-size: 1.3rem;
+    font-weight: 600;
+    }
+
+    .users-grid {
+    display: grid;
+    gap: 1px;
+    background: #e9ecef;
+    }
+
+    .user-row {
+    background: white;
+    padding: 1.5rem 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: all 0.3s ease;
+    }
+
+    .user-row:hover {
+    background: #f8f9fa;
+    transform: translateX(5px);
+    }
+
+    .user-info {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    }
+
+    .user-avatar {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 600;
+    font-size: 1.2rem;
+    }
+
+    .user-details h3 {
+    color: #333;
+    margin-bottom: 5px;
+    font-size: 1.1rem;
+    }
+
+    .user-details p {
+    color: #666;
+    font-size: 0.9rem;
+    }
+
+    .user-actions {
+    display: flex;
+    gap: 10px;
+    }
+
+    .no-users {
+    text-align: center;
+    padding: 4rem 2rem;
+    color: #666;
+    }
+
+    .no-users i {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+    color: #ccc;
+    }
+
+    /* Modal Styles */
+    .modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(5px);
+    }
+
+    .modal-content {
+    background-color: white;
+    margin: 5% auto;
+    padding: 0;
+    border-radius: 15px;
+    width: 90%;
+    max-width: 500px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+    animation: modalSlideIn 0.3s ease;
+    }
+
+    @keyframes modalSlideIn {
+    from {
+    transform: translateY(-50px);
+    opacity: 0;
+    }
+    to {
+    transform: translateY(0);
+    opacity: 1;
+    }
+    }
+
+    .modal-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 1.5rem 2rem;
+    border-radius: 15px 15px 0 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    }
+
+    .modal-title {
+    font-size: 1.3rem;
+    font-weight: 600;
+    }
+
+    .close {
+    color: white;
+    font-size: 1.5rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    }
+
+    .close:hover {
+    transform: scale(1.2);
+    }
+
+    .modal-body {
+    padding: 2rem;
+    }
+
+    .form-group {
+    margin-bottom: 1.5rem;
+    }
+
+    .form-group label {
+    display: block;
+    margin-bottom: 8px;
+    color: #333;
+    font-weight: 500;
+    }
+
+    .form-control {
+    width: 100%;
+    padding: 12px 15px;
+    border: 2px solid #e1e5e9;
+    border-radius: 8px;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    background: #f8f9fa;
+    }
+
+    .form-control:focus {
+    outline: none;
+    border-color: #667eea;
+    background: white;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+
+    .file-input-wrapper {
+    position: relative;
+    display: inline-block;
+    width: 100%;
+    }
+
+    .file-input {
+    position: absolute;
+    opacity: 0;
+    width: 100%;
+    height: 100%;
+    cursor: pointer;
+    }
+
+    .file-input-display {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 15px;
+    border: 2px dashed #e1e5e9;
+    border-radius: 8px;
+    background: #f8f9fa;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    }
+
+    .file-input-display:hover {
+    border-color: #667eea;
+    background: white;
+    }
+
+    .checkbox-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 1rem;
+    }
+
+    .checkbox-wrapper input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    accent-color: #667eea;
+    }
+
+    .checkbox-label {
+    color: #333;
+    font-size: 0.9rem;
+    }
+
+    .help-text {
+    font-size: 0.8rem;
+    color: #666;
+    margin-top: 5px;
+    }
+
+    .modal-footer {
+    padding: 1.5rem 2rem;
+    border-top: 1px solid #e9ecef;
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    }
+
+    .btn-secondary {
+    background: #6c757d;
+    color: white;
+    }
+
+    .btn-secondary:hover {
+    background: #545b62;
+    }
+
+    .loading {
+    display: none;
+    text-align: center;
+    padding: 1rem;
+    }
+
+    .spinner {
+    border: 3px solid #f3f3f3;
+    border-top: 3px solid #667eea;
+    border-radius: 50%;
+    width: 30px;
+    height: 30px;
+    animation: spin 1s linear infinite;
+    margin: 0 auto 10px;
+    }
+
+    @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+    }
+
+    @media (max-width: 768px) {
+    .container {
+    padding: 1rem;
+    }
+
+    .navbar-content {
+    flex-direction: column;
+    gap: 1rem;
+    }
+
+    .page-header {
+    flex-direction: column;
+    gap: 1rem;
+    text-align: center;
+    }
+
+    .user-row {
+    flex-direction: column;
+    gap: 1rem;
+    text-align: center;
+    }
+
+    .modal-content {
+    margin: 10% auto;
+    width: 95%;
+    }
+    }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+    <div class="navbar-content">
+    <div class="navbar-brand">
+    <i class="fas fa-tachometer-alt"></i>
+    Face Recognition Dashboard
+    </div>
+    <div class="navbar-nav">
+    <a href="{{ url_for('dashboard_admin') }}" class="nav-link">
+    <i class="fas fa-chart-line"></i>
+    Dashboard
+    </a>
+    <a href="{{ url_for('users_admin') }}" class="nav-link active">
+    <i class="fas fa-users"></i>
+    Manage Users
+    </a>
+    <a href="{{ url_for('logout_admin') }}" class="nav-link">
+    <i class="fas fa-sign-out-alt"></i>
+    Logout
+    </a>
+    </div>
+    </div>
+    </nav>
+
+    <div class="container">
+    <div class="page-header">
+    <div>
+    <h1 class="page-title">
+    <i class="fas fa-users"></i>
+    Manage Users
+    </h1>
+    <p class="page-subtitle">Add, update, and delete face recognition users</p>
+    </div>
+    <button class="btn btn-primary" onclick="openAddUserModal()">
+    <i class="fas fa-plus"></i>
+    Add / Update User
+    </button>
+    </div>
+
+    <div class="users-container">
+    <div class="users-header">
+    <h2 class="users-title">
+    <i class="fas fa-list"></i>
+    Registered Users ({{ users|length }})
+    </h2>
+    </div>
+
+    {% if users %}
+    <div class="users-grid">
+    {% for user in users %}
+    <div class="user-row">
+    <div class="user-info">
+    <div class="user-avatar">
+    {{ user.name[0].upper() }}
+    </div>
+    <div class="user-details">
+    <h3>{{ user.name }}</h3>
+    <p><i class="fas fa-user-check"></i> Registered User</p>
+    </div>
+    </div>
+    <div class="user-actions">
+    <button class="btn btn-danger" onclick="deleteUser('{{ user.name }}')">
+    <i class="fas fa-trash"></i>
+    Delete
+    </button>
+    </div>
+    </div>
+    {% endfor %}
+    </div>
+    {% else %}
+    <div class="no-users">
+    <i class="fas fa-user-plus"></i>
+    <h3>No users registered</h3>
+    <p>Click "Add / Update User" to register your first user.</p>
+    </div>
+    {% endif %}
+    </div>
+    </div>
+
+    <!-- Add/Update User Modal -->
+    <div id="addUserModal" class="modal">
+    <div class="modal-content">
+    <div class="modal-header">
+    <h2 class="modal-title">
+    <i class="fas fa-user-plus"></i>
+    Add / Update User
+    </h2>
+    <span class="close" onclick="closeAddUserModal()">&times;</span>
+    </div>
+    <form id="addUserForm" enctype="multipart/form-data">
+    <div class="modal-body">
+    <div class="form-group">
+    <label for="userName">User Name</label>
+    <input type="text" id="userName" name="user" class="form-control" placeholder="Enter user name" required>
+    </div>
+
+    <div class="form-group">
+    <label for="folderPath">Select Images Folder</label>
+    <div class="file-input-wrapper">
+    <input type="file" id="folderPath" name="folder_path" class="file-input" webkitdirectory directory multiple required>
+    <div class="file-input-display">
+    <i class="fas fa-folder-open"></i>
+    <span id="folderDisplay">Choose folder containing user images...</span>
+    </div>
+    </div>
+    <div class="help-text">Select a folder containing multiple images of the user</div>
+    </div>
+
+    <div class="checkbox-wrapper">
+    <input type="checkbox" id="overwrite" name="overwrite">
+    <label for="overwrite" class="checkbox-label">
+    <strong>Overwrite existing user data</strong>
+    </label>
+    </div>
+    <div class="help-text">
+    If enabled, this will overwrite and update the data of the user you named above
+    </div>
+
+    <div class="loading" id="loadingIndicator">
+    <div class="spinner"></div>
+    <p>Processing user enrollment...</p>
+    </div>
+    </div>
+    <div class="modal-footer">
+    <button type="button" class="btn btn-secondary" onclick="closeAddUserModal()">
+    <i class="fas fa-times"></i>
+    Cancel
+    </button>
+    <button type="submit" class="btn btn-primary">
+    <i class="fas fa-save"></i>
+    Add / Update User
+    </button>
+    </div>
+    </form>
+    </div>
+    </div>
+
+    <script>
+    function openAddUserModal() {
+    document.getElementById('addUserModal').style.display = 'block';
+    }
+
+    function closeAddUserModal() {
+    document.getElementById('addUserModal').style.display = 'none';
+    document.getElementById('addUserForm').reset();
+    document.getElementById('folderDisplay').textContent = 'Choose folder containing user images...';
+    document.getElementById('loadingIndicator').style.display = 'none';
+    }
+
+    // Handle folder selection display
+    document.getElementById('folderPath').addEventListener('change', function(e) {
+    const files = e.target.files;
+    if (files.length > 0) {
+    const folderName = files[0].webkitRelativePath.split('/')[0];
+    document.getElementById('folderDisplay').textContent = `Selected: ${folderName} (${files.length} files)`;
+    }
+    });
+
+    // Handle form submission
+    document.getElementById('addUserForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+
+    const formData = new FormData();
+    const userName = document.getElementById('userName').value;
+    const folderFiles = document.getElementById('folderPath').files;
+    const overwrite = document.getElementById('overwrite').checked;
+
+    if (!userName || folderFiles.length === 0) {
+    alert('Please fill in all required fields');
+    return;
+    }
+
+    // Show loading indicator
+    document.getElementById('loadingIndicator').style.display = 'block';
+
+    formData.append('user', userName);
+    formData.append('folder_path', folderFiles[0].webkitRelativePath.split('/')[0]);
+    if (overwrite) {
+    formData.append('overwrite', 'on');
+    }
+
+    fetch('/add_user_admin', {
+    method: 'POST',
+    body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+    document.getElementById('loadingIndicator').style.display = 'none';
+
+    if (data.success) {
+    alert(`Success: ${data.message}`);
+    closeAddUserModal();
+    location.reload();
+    } else {
+    alert(`Error: ${data.message}`);
+    }
+    })
+    .catch(error => {
+    document.getElementById('loadingIndicator').style.display = 'none';
+    alert('An error occurred while adding the user');
+    console.error('Error:', error);
+    });
+    });
+
+    function deleteUser(userName) {
+    if (confirm(`Are you sure you want to delete user "${userName}"? This action cannot be undone.`)) {
+    fetch(`/delete_user_admin/${encodeURIComponent(userName)}`, {
+    method: 'POST'
+    })
+    .then(response => response.json())
+    .then(data => {
+    if (data.success) {
+    alert(`Success: ${data.message}`);
+    location.reload();
+    } else {
+    alert(`Error: ${data.message}`);
+    }
+    })
+    .catch(error => {
+    alert('An error occurred while deleting the user');
+    console.error('Error:', error);
+    });
+    }
+    }
+
+    // Close modal when clicking outside
+    window.onclick = function(event) {
+    const modal = document.getElementById('addUserModal');
+    if (event.target == modal) {
+    closeAddUserModal();
+    }
+    }
+
+    // Add animation when page loads
+    document.addEventListener('DOMContentLoaded', function() {
+    const userRows = document.querySelectorAll('.user-row');
+    userRows.forEach((row, index) => {
+    setTimeout(() => {
+    row.style.opacity = '0';
+    row.style.transform = 'translateX(-20px)';
+    row.style.transition = 'all 0.5s ease';
+
+    setTimeout(() => {
+    row.style.opacity = '1';
+    row.style.transform = 'translateX(0)';
+    }, 100);
+    }, index * 100);
+    });
+    });
+    </script>
+</body>
+</html>

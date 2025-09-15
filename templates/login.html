@@ -1,0 +1,1276 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JARVIS NEURAL INTERFACE 2066</title>
+    <link rel="icon" href="/static/favicon.ico">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@300;400;500;600;700&display=swap"
+          rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&display=swap"
+          rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'cyber-blue': '#00e5ff',
+                        'cyber-blue-dark': '#00b8d4',
+                        'cyber-secondary': '#2979ff',
+                        'cyber-accent': '#00fff0',
+                        'cyber-dark': '#0a0e17',
+                        'cyber-darker': '#060a12',
+                        'cyber-text': '#e0f7fa',
+                        'cyber-text-dim': '#b3e5fc',
+                        'cyber-success': '#00e676',
+                        'cyber-warning': '#ffab00',
+                        'cyber-error': '#ff5252'
+                    },
+                    fontFamily: {
+                        'rajdhani': ['Rajdhani', 'sans-serif'],
+                        'orbitron': ['Orbitron', 'monospace']
+                    },
+                    animation: {
+                        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'float': 'float 6s ease-in-out infinite',
+                    },
+                    keyframes: {
+                        float: {
+                            '0%, 100%': {transform: 'translateY(0)'},
+                            '50%': {transform: 'translateY(-10px)'},
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .glow-border {
+            box-shadow: 0 0 0 1px rgba(0, 229, 255, 0.3),
+            0 0 40px rgba(0, 229, 255, 0.1),
+            inset 0 0 40px rgba(0, 229, 255, 0.05);
+        }
+
+        .text-glow {
+            text-shadow: 0 0 10px rgba(0, 229, 255, 0.5);
+        }
+
+        .button-glow {
+            box-shadow: 0 0 15px rgba(0, 229, 255, 0.5);
+            transition: all 0.3s ease;
+        }
+
+        .button-glow:hover {
+            box-shadow: 0 0 25px rgba(0, 229, 255, 0.8);
+        }
+
+        /* HUD Elements for Camera */
+        .hud-corner {
+            position: absolute;
+            width: 30px;
+            height: 30px;
+            border-color: rgba(0, 229, 255, 0.7);
+        }
+
+        .hud-top-left {
+            top: 10px;
+            left: 10px;
+            border-top: 2px solid;
+            border-left: 2px solid;
+        }
+
+        .hud-top-right {
+            top: 10px;
+            right: 10px;
+            border-top: 2px solid;
+            border-right: 2px solid;
+        }
+
+        .hud-bottom-left {
+            bottom: 10px;
+            left: 10px;
+            border-bottom: 2px solid;
+            border-left: 2px solid;
+        }
+
+        .hud-bottom-right {
+            bottom: 10px;
+            right: 10px;
+            border-bottom: 2px solid;
+            border-right: 2px solid;
+        }
+
+        /* Scanning effect */
+        .scan-line {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 5px;
+            background: linear-gradient(to right,
+            rgba(0, 229, 255, 0),
+            rgba(0, 229, 255, 0.5),
+            rgba(0, 229, 255, 0));
+            animation: scan 3s linear infinite;
+            z-index: 10;
+        }
+
+        @keyframes scan {
+            0% {
+                top: 0;
+            }
+            100% {
+                top: 100%;
+            }
+        }
+
+        /* Grid overlay */
+        .grid-overlay {
+            position: absolute;
+            inset: 0;
+            background-image: linear-gradient(rgba(0, 229, 255, 0.1) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(0, 229, 255, 0.1) 1px, transparent 1px);
+            background-size: 20px 20px;
+            z-index: 5;
+            pointer-events: none;
+        }
+
+        /* Hexagon pattern */
+        .hexagon-bg {
+            position: absolute;
+            inset: 0;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='49' viewBox='0 0 28 49'%3E%3Cg fill-rule='evenodd'%3E%3Cg id='hexagons' fill='%2300e5ff' fill-opacity='0.05' fill-rule='nonzero'%3E%3Cpath d='M13.99 9.25l13 7.5v15l-13 7.5L1 31.75v-15l12.99-7.5zM3 17.9v12.7l10.99 6.34 11-6.35V17.9l-11-6.34L3 17.9zM0 15l12.98-7.5V0h-2v6.35L0 12.69v2.3zm0 18.5L12.98 41v8h-2v-6.85L0 35.81v-2.3zM15 0v7.5L27.99 15H28v-2.31h-.01L17 6.35V0h-2zm0 49v-8l12.99-7.5H28v2.31h-.01L17 42.15V49h-2z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+            opacity: 0.5;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        /* Typing effect */
+        .typing-effect::after {
+            content: '|';
+            animation: blink 1s step-end infinite;
+        }
+
+        @keyframes blink {
+            from, to {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0;
+            }
+        }
+
+        /* Hologram effect */
+        .hologram {
+            position: relative;
+        }
+
+        .hologram::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(to right, transparent, rgba(0, 229, 255, 0.8), transparent);
+            animation: hologram-scan 2s linear infinite;
+            z-index: 2;
+        }
+
+        @keyframes hologram-scan {
+            0% {
+                top: 0;
+            }
+            100% {
+                top: 100%;
+            }
+        }
+
+        /* Circular progress */
+        .circular-progress {
+            transform: rotate(-90deg);
+        }
+
+        .circular-progress circle {
+            stroke-dasharray: 283;
+            stroke-dashoffset: 283;
+            transition: stroke-dashoffset 1s ease;
+        }
+
+        /* Error message styling */
+        .error-message {
+            color: #ff5252;
+            font-size: 0.875rem;
+            margin-top: 0.5rem;
+            text-align: center;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .error-message.visible {
+            opacity: 1;
+        }
+
+        /* Match indicator styling */
+        .match-indicator {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-top: 0.5rem;
+            font-size: 0.875rem;
+        }
+
+        .match-score {
+            margin-left: 0.5rem;
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+            font-weight: 600;
+        }
+
+        .match-high {
+            background-color: rgba(0, 230, 118, 0.2);
+            color: #00e676;
+        }
+
+        .match-medium {
+            background-color: rgba(255, 171, 0, 0.2);
+            color: #ffab00;
+        }
+
+        .match-low {
+            background-color: rgba(255, 82, 82, 0.2);
+            color: #ff5252;
+        }
+    </style>
+</head>
+<body class="bg-cyber-darker text-cyber-text font-rajdhani overflow-hidden h-screen w-screen relative">
+
+<!-- Three.js Background -->
+<div id="canvas-container" class="fixed inset-0 z-0"></div>
+
+<!-- Grid and Hexagon Overlays -->
+<div class="grid-overlay fixed inset-0 z-1"></div>
+<div class="hexagon-bg fixed inset-0 z-1"></div>
+
+<!-- Main Container -->
+<div class="relative z-50 h-screen w-screen flex flex-col p-4">
+    <!-- Header -->
+    <div class="text-center py-6 mb-4 relative z-60">
+        <div class="flex justify-center items-center mb-2">
+            <div class="w-10 h-1 bg-cyber-blue rounded-full mr-4 opacity-70"></div>
+            <h1 class="font-orbitron text-5xl md:text-6xl font-bold tracking-[8px] text-cyber-blue text-glow">
+                J.A.R.V.I.S</h1>
+            <div class="w-10 h-1 bg-cyber-blue rounded-full ml-4 opacity-70"></div>
+        </div>
+        <p class="text-sm md:text-base tracking-[4px] text-cyber-text-dim">JUST A RATHER VERY INTELLIGENT SYSTEM</p>
+        <div class="mt-2 text-xs text-cyber-text-dim/60 tracking-wider">NEURAL INTERFACE v2066.3.15</div>
+
+        <!-- Status Indicators -->
+        <div class="flex justify-center space-x-8 mt-4">
+            <div class="flex items-center">
+                <div class="w-2 h-2 bg-cyber-success rounded-full mr-2 animate-pulse"></div>
+                <span class="text-xs text-cyber-text-dim/80 tracking-wider">SYSTEM ONLINE</span>
+            </div>
+            <div class="flex items-center">
+                <div class="w-2 h-2 bg-cyber-warning rounded-full mr-2 animate-pulse"></div>
+                <span class="text-xs text-cyber-text-dim/80 tracking-wider">AWAITING AUTHENTICATION</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="flex-1 flex items-center justify-center">
+        <div class="w-full max-w-2xl relative">
+            <!-- Decorative Elements -->
+            <div class="absolute -top-16 left-0 w-20 h-20 border-l-2 border-t-2 border-cyber-blue/30 -z-10"></div>
+            <div class="absolute -bottom-16 right-0 w-20 h-20 border-r-2 border-b-2 border-cyber-blue/30 -z-10"></div>
+
+            <!-- Name Input Stage -->
+            <div id="nameStage" class="flex flex-col items-center space-y-8 px-6">
+                <div class="text-center mb-2">
+                    <p class="text-cyber-text-dim/80 mb-4 tracking-wide">INITIATING NEURAL HANDSHAKE PROTOCOL</p>
+                    <div class="typing-effect text-lg text-cyber-blue" id="typingText">IDENTITY VERIFICATION REQUIRED
+                    </div>
+                </div>
+
+                <div class="w-full relative">
+                    <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-cyber-blue/70" fill="none"
+                             viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                  d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                        </svg>
+                    </div>
+                    <input id="nameInput" type="text" placeholder="ENTER YOUR IDENTITY DESIGNATION"
+                           class="w-full bg-cyber-darker/60 border-2 border-cyber-blue/30 rounded-lg py-4 pl-12 pr-6 text-lg tracking-wider text-cyber-text focus:border-cyber-blue focus:outline-none placeholder-cyber-text-dim/50 transition-all duration-300 focus:glow-border">
+                </div>
+
+                <!-- Match indicator -->
+                <div id="matchIndicator" class="match-indicator hidden">
+                    <span id="matchText">MATCH CONFIDENCE:</span>
+                    <span id="matchScore" class="match-score">0%</span>
+                </div>
+
+                <!-- Error message -->
+                <div id="errorMessage" class="error-message">
+                    IDENTITY VERIFICATION FAILED. ACCESS DENIED.
+                </div>
+
+                <div class="w-full flex flex-col space-y-4">
+                    <button id="proceedButton"
+                            class="w-full bg-gradient-to-r from-cyber-blue/80 to-cyber-secondary/80 text-cyber-text py-4 px-8 text-base tracking-[2px] uppercase cursor-pointer overflow-hidden rounded-lg button-glow opacity-40 pointer-events-none transition-all duration-300 relative group">
+                        <span class="relative z-10">Initialize Biometric Scan</span>
+                        <span class="absolute inset-0 bg-gradient-to-r from-cyber-blue to-cyber-secondary opacity-0 group-hover:opacity-30 transition-opacity duration-300"></span>
+                    </button>
+
+                    <div class="text-center text-xs text-cyber-text-dim/60 tracking-wider">
+                        STARK INDUSTRIES SECURITY PROTOCOL ACTIVE
+                    </div>
+                </div>
+
+                <!-- Circular Progress -->
+                <div class="mt-6 relative">
+                    <svg class="circular-progress w-24 h-24" viewBox="0 0 100 100">
+                        <circle cx="50" cy="50" r="45" fill="none" stroke="rgba(0, 229, 255, 0.1)" stroke-width="2"/>
+                        <circle id="progressCircle" cx="50" cy="50" r="45" fill="none" stroke="rgba(0, 229, 255, 0.7)"
+                                stroke-width="2" stroke-dashoffset="283"/>
+                    </svg>
+                    <div class="absolute inset-0 flex items-center justify-center text-cyber-blue text-sm tracking-wider"
+                         id="progressText">0%
+                    </div>
+                </div>
+            </div>
+
+            <!-- Choice Stage -->
+            <div id="choiceStage" class="hidden flex flex-col items-center space-y-8 px-6">
+                <div class="text-center mb-2">
+                    <p class="text-cyber-text-dim/80 mb-4 tracking-wide">BIOMETRIC AUTHENTICATION METHOD</p>
+                    <div class="text-lg text-cyber-blue">SELECT VERIFICATION PROTOCOL</div>
+                </div>
+
+                <div class="w-full flex flex-col space-y-4 max-w-md">
+                    <button id="uploadButton"
+                            class="w-full bg-gradient-to-r from-cyber-blue/80 to-cyber-secondary/80 text-cyber-text py-4 px-8 text-base tracking-[2px] uppercase cursor-pointer overflow-hidden rounded-lg button-glow transition-all duration-300 relative group">
+                        <span class="relative z-10">📷 UPLOAD PICTURE</span>
+                        <span class="absolute inset-0 bg-gradient-to-r from-cyber-blue to-cyber-secondary opacity-0 group-hover:opacity-30 transition-opacity duration-300"></span>
+                    </button>
+
+                    <button id="webcamButton"
+                            class="w-full bg-gradient-to-r from-cyber-secondary/80 to-cyber-blue/80 text-cyber-text py-4 px-8 text-base tracking-[2px] uppercase cursor-pointer overflow-hidden rounded-lg button-glow transition-all duration-300 relative group">
+                        <span class="relative z-10">📹 USE LIVE WEBCAM</span>
+                        <span class="absolute inset-0 bg-gradient-to-r from-cyber-secondary to-cyber-blue opacity-0 group-hover:opacity-30 transition-opacity duration-300"></span>
+                    </button>
+
+                    <button id="backButton"
+                            class="w-full bg-cyber-darker/60 border-2 border-cyber-blue/30 text-cyber-text py-3 px-6 text-sm tracking-[2px] uppercase cursor-pointer rounded-lg transition-all duration-300 hover:border-cyber-blue/60">
+                        ← BACK TO NAME INPUT
+                    </button>
+                </div>
+
+                <!-- File input for picture upload -->
+                <input type="file" id="pictureInput" accept="image/*" class="hidden">
+            </div>
+
+            <!-- Upload Result Stage -->
+            <div id="uploadResultStage" class="hidden flex flex-col items-center space-y-8 px-6">
+                <div class="text-center mb-2">
+                    <p class="text-cyber-text-dim/80 mb-4 tracking-wide">BIOMETRIC VERIFICATION COMPLETE</p>
+                    <div class="text-lg text-cyber-success" id="uploadResultText">AUTHENTICATION SUCCESSFUL</div>
+                </div>
+
+                <div class="w-32 h-32 mx-auto relative">
+                    <!-- Outer ring -->
+                    <div id="uploadOuterRing"
+                         class="absolute inset-0 rounded-full border-4 border-cyber-success animate-pulse"></div>
+                    <!-- Inner background -->
+                    <div id="uploadInnerCircle"
+                         class="absolute inset-4 rounded-full bg-cyber-success/20 flex items-center justify-center svg-container">
+                        <!-- JS will inject ✅ or ❌ -->
+                    </div>
+                </div>
+
+                <div class="text-center text-sm text-cyber-text-dim/80 tracking-wider" id="uploadResultMessage">
+                    ACCESS GRANTED • WELCOME TO THE SYSTEM
+                </div>
+            </div>
+
+
+            <div id="webcamResultStage" class="hidden flex flex-col items-center space-y-8 px-6">
+                <div class="text-center mb-2">
+                    <p class="text-cyber-text-dim/80 mb-4 tracking-wide">BIOMETRIC VERIFICATION COMPLETE</p>
+                    <div class="text-lg text-cyber-success" id="webcamResultText">AUTHENTICATION SUCCESSFUL</div>
+                </div>
+
+                <div class="w-32 h-32 mx-auto relative">
+                    <!-- Outer ring -->
+                    <div id="webcamOuterRing"
+                         class="absolute inset-0 rounded-full border-4 border-cyber-success animate-pulse"></div>
+
+                    <!-- Inner circle + icon -->
+                    <div id="webcamIconContainer"
+                         class="absolute inset-4 rounded-full bg-cyber-success/20 flex items-center justify-center">
+                        <!-- ✅ / ❌ injected here -->
+                    </div>
+                </div>
+
+                <div id="webcamResultMessage"
+                     class="text-center text-sm text-cyber-text-dim/80 tracking-wider">
+                    ACCESS GRANTED • WELCOME TO THE SYSTEM
+                </div>
+            </div>
+
+
+            <!-- Camera Box -->
+            <div id="cameraBox"
+                 class="hidden relative w-[400px] h-[300px] mx-auto mt-10 bg-cyber-darker/80 rounded-xl glow-border overflow-hidden hologram">
+                <!-- Video Element -->
+                <video id="videoElement" class="absolute inset-0 w-full h-full object-cover" autoplay playsinline
+                       muted></video>
+
+                <!-- HUD Overlay Elements -->
+                <div class="grid-overlay"></div>
+                <div class="scan-line"></div>
+
+                <!-- Corner HUD Elements -->
+                <div class="hud-corner hud-top-left"></div>
+                <div class="hud-corner hud-top-right"></div>
+                <div class="hud-corner hud-bottom-left"></div>
+                <div class="hud-corner hud-bottom-right"></div>
+
+                <!-- Status Indicators -->
+                <div class="absolute top-3 left-12 text-xs text-cyber-blue flex items-center">
+                    <div class="w-2 h-2 bg-cyber-success rounded-full mr-2 animate-pulse"></div>
+                    <span>CAMERA ACTIVE</span>
+                </div>
+
+                <!-- Timer -->
+                <div class="absolute top-3 right-12 text-xs text-cyber-blue" id="scanTimer">00:00:00</div>
+
+                <!-- User Info -->
+                <div class="absolute bottom-3 left-12 text-xs text-cyber-blue" id="userInfo"></div>
+
+                <!-- Scan Status -->
+                <div class="absolute bottom-3 right-12 text-xs text-cyber-warning" id="scanStatus">SCANNING...</div>
+
+                <!-- Canvas for effects -->
+                <canvas id="canvasElement" class="absolute inset-0 w-full h-full pointer-events-none"></canvas>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="py-4 text-center text-xs text-cyber-text-dim/40 tracking-wider">
+        © 2066 STARK INDUSTRIES • NEURAL INTERFACE TECHNOLOGY
+    </div>
+</div>
+
+<script>
+    // Global variable to store current user name
+    let currentUserName = '';
+
+    // Flag to prevent duplicate event listeners
+    let choiceListenersSetup = false;
+
+    // Background animation
+    function initThreeJsBackground() {
+        const container = document.getElementById('canvas-container');
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        camera.position.z = 50;
+        const renderer = new THREE.WebGLRenderer({antialias: true, alpha: true});
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setClearColor(0x060a12, 1);
+        container.appendChild(renderer.domElement);
+
+        // Create particles
+        const particlesGeometry = new THREE.BufferGeometry();
+        const particlesCount = 1500;
+        const posArray = new Float32Array(particlesCount * 3);
+        for (let i = 0; i < particlesCount * 3; i++) {
+            posArray[i] = (Math.random() - 0.5) * 100;
+        }
+        particlesGeometry.setAttribute('position', new THREE.BufferAttribute(posArray, 3));
+
+        // Create particle material with custom colors
+        const particlesMaterial = new THREE.PointsMaterial({
+            size: 0.2,
+            color: 0x00e5ff,
+            transparent: true,
+            opacity: 0.6,
+            blending: THREE.AdditiveBlending
+        });
+
+        const particlesMesh = new THREE.Points(particlesGeometry, particlesMaterial);
+        scene.add(particlesMesh);
+
+        // Add a subtle glow effect
+        const glowGeometry = new THREE.SphereGeometry(30, 32, 32);
+        const glowMaterial = new THREE.MeshBasicMaterial({
+            color: 0x00b8d4,
+            transparent: true,
+            opacity: 0.05,
+            side: THREE.BackSide
+        });
+        const glowMesh = new THREE.Mesh(glowGeometry, glowMaterial);
+        scene.add(glowMesh);
+
+        // Mouse interaction
+        let mouseX = 0;
+        let mouseY = 0;
+        document.addEventListener('mousemove', (event) => {
+            mouseX = (event.clientX / window.innerWidth) * 2 - 1;
+            mouseY = -(event.clientY / window.innerHeight) * 2 + 1;
+        });
+
+        function animate() {
+            requestAnimationFrame(animate);
+
+            // Rotate particles based on mouse position
+            particlesMesh.rotation.x += 0.0002;
+            particlesMesh.rotation.y += 0.0003;
+            particlesMesh.rotation.x += mouseY * 0.0001;
+            particlesMesh.rotation.y += mouseX * 0.0001;
+
+            // Pulse glow effect
+            const time = Date.now() * 0.001;
+            glowMesh.material.opacity = 0.03 + Math.sin(time) * 0.02;
+
+            renderer.render(scene, camera);
+        }
+
+        // Handle window resize
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        animate();
+    }
+
+    // Typing effect
+    function typeText() {
+        const textElement = document.getElementById('typingText');
+        const fullText = textElement.textContent;
+        textElement.textContent = '';
+        textElement.classList.add('typing-effect');
+
+        let i = 0;
+        const typeInterval = setInterval(() => {
+            if (i < fullText.length) {
+                textElement.textContent += fullText.charAt(i);
+                i++;
+            } else {
+                clearInterval(typeInterval);
+                setTimeout(() => {
+                    textElement.classList.remove('typing-effect');
+                }, 1000);
+            }
+        }, 50);
+    }
+
+    // Progress animation
+    function animateProgress() {
+        const progressCircle = document.getElementById('progressCircle');
+        const progressText = document.getElementById('progressText');
+        let progress = 0;
+
+        const interval = setInterval(() => {
+            progress += 1;
+            const dashoffset = 283 - (283 * progress / 100);
+            progressCircle.style.strokeDashoffset = dashoffset;
+            progressText.textContent = `${progress}%`;
+
+            if (progress >= 100) {
+                clearInterval(interval);
+            }
+        }, 50);
+    }
+
+    // Check name against database
+    function checkName(name) {
+        const formData = new FormData();
+        formData.append('username', name);
+
+        // Show loading state
+        const progressCircle = document.getElementById('progressCircle');
+        const progressText = document.getElementById('progressText');
+        progressCircle.style.strokeDashoffset = 283 - (283 * 50 / 100);
+        progressText.textContent = '50%';
+
+        fetch('/check_name', {
+            method: 'POST',
+            body: formData
+        })
+                .then(response => response.json())
+                .then(data => {
+                    console.log('Name check response:', data);
+
+                    // Update match indicator
+                    const matchIndicator = document.getElementById('matchIndicator');
+                    const matchScore = document.getElementById('matchScore');
+                    const proceedButton = document.getElementById('proceedButton');
+                    const errorMessage = document.getElementById('errorMessage');
+
+                    // Show match indicator
+                    matchIndicator.classList.remove('hidden');
+
+                    // Set score and styling based on match quality
+                    const score = data.score || 0;
+                    matchScore.textContent = `${score}%`;
+
+                    // Remove previous classes
+                    matchScore.classList.remove('match-high', 'match-medium', 'match-low');
+
+                    if (score >= 80) {
+                        matchScore.classList.add('match-high');
+                        proceedButton.classList.remove('opacity-40', 'pointer-events-none');
+                        proceedButton.classList.add('opacity-100');
+                        errorMessage.classList.remove('visible');
+                    } else if (score >= 60) {
+                        matchScore.classList.add('match-medium');
+                        proceedButton.classList.remove('opacity-40', 'pointer-events-none');
+                        proceedButton.classList.add('opacity-100');
+                        errorMessage.classList.remove('visible');
+                    } else {
+                        matchScore.classList.add('match-low');
+                        proceedButton.classList.add('opacity-40', 'pointer-events-none');
+                        proceedButton.classList.remove('opacity-100');
+                        errorMessage.classList.add('visible');
+                    }
+
+                    // Update progress based on score
+                    const progressValue = Math.max(score, 10); // Minimum 10% for visibility
+                    progressCircle.style.strokeDashoffset = 283 - (283 * progressValue / 100);
+                    progressText.textContent = `${Math.round(progressValue)}%`;
+                })
+                .catch(error => {
+                    console.error('Error checking name:', error);
+                    // Show error state
+                    const errorMessage = document.getElementById('errorMessage');
+                    errorMessage.textContent = 'SYSTEM ERROR: UNABLE TO VERIFY IDENTITY';
+                    errorMessage.classList.add('visible');
+                });
+    }
+
+    // Enable button when typing
+    function handleNameInput() {
+        const nameInput = document.getElementById('nameInput');
+        const proceedButton = document.getElementById('proceedButton');
+        const errorMessage = document.getElementById('errorMessage');
+        let typingTimer;
+        const doneTypingInterval = 500; // ms
+
+        nameInput.addEventListener('input', function () {
+            // Clear any previous timers
+            clearTimeout(typingTimer);
+
+            if (this.value.trim().length > 0) {
+                // Set initial progress
+                const progressCircle = document.getElementById('progressCircle');
+                const progressText = document.getElementById('progressText');
+                progressCircle.style.strokeDashoffset = 283 - (283 * 25 / 100);
+                progressText.textContent = '25%';
+
+                // Start timer to check name after user stops typing
+                typingTimer = setTimeout(() => {
+                    checkName(this.value.trim());
+                }, doneTypingInterval);
+            } else {
+                // Reset UI when input is empty
+                proceedButton.classList.add('opacity-40', 'pointer-events-none');
+                proceedButton.classList.remove('opacity-100');
+                errorMessage.classList.remove('visible');
+
+                // Hide match indicator
+                const matchIndicator = document.getElementById('matchIndicator');
+                matchIndicator.classList.add('hidden');
+
+                // Reset progress
+                const progressCircle = document.getElementById('progressCircle');
+                const progressText = document.getElementById('progressText');
+                progressCircle.style.strokeDashoffset = 283;
+                progressText.textContent = '0%';
+            }
+        });
+
+        // Focus input on load
+        nameInput.focus();
+    }
+
+    // Handle proceed button
+    function handleFormSubmit() {
+        const proceedButton = document.getElementById('proceedButton');
+        const nameInput = document.getElementById('nameInput');
+
+        proceedButton.addEventListener('click', function (e) {
+            e.preventDefault();
+            const name = nameInput.value.trim();
+
+            if (name.length > 0) {
+                // Show loading state
+                this.textContent = "VERIFYING...";
+                this.disabled = true;
+
+                // Create form data
+                const formData = new FormData();
+                formData.append('username', name);
+
+                // Send auth request
+                fetch('/auth', {
+                    method: 'POST',
+                    body: formData
+                })
+                        .then(response => response.json())
+                        .then(data => {
+                            console.log('Auth response:', data);
+
+                            if (data.status === 'success') {
+                                // Add button press effect
+                                this.classList.add('scale-95');
+                                setTimeout(() => {
+                                    this.classList.remove('scale-95');
+                                    // Show choice stage with verified name
+                                    showChoiceStage(data.match_name);
+                                }, 200);
+                            } else {
+                                // Show error
+                                const errorMessage = document.getElementById('errorMessage');
+                                errorMessage.textContent = data.message || 'IDENTITY VERIFICATION FAILED';
+                                errorMessage.classList.add('visible');
+
+                                // Reset button
+                                this.textContent = "Initialize Biometric Scan";
+                                this.disabled = false;
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error during authentication:', error);
+                            // Show error
+                            const errorMessage = document.getElementById('errorMessage');
+                            errorMessage.textContent = 'SYSTEM ERROR: AUTHENTICATION FAILED';
+                            errorMessage.classList.add('visible');
+
+                            // Reset button
+                            this.textContent = "Initialize Biometric Scan";
+                            this.disabled = false;
+                        });
+            }
+        });
+
+        // Also submit on Enter key
+        nameInput.addEventListener('keypress', function (e) {
+            if (e.key === 'Enter' && this.value.trim().length > 0) {
+                // Only proceed if the button is enabled (match score is high enough)
+                if (!proceedButton.classList.contains('pointer-events-none')) {
+                    e.preventDefault();
+                    proceedButton.click();
+                }
+            }
+        });
+    }
+
+    // Show choice stage
+    function showChoiceStage(name) {
+        currentUserName = name;
+        const nameStage = document.getElementById('nameStage');
+        const choiceStage = document.getElementById('choiceStage');
+
+        // Hide name stage with fade effect
+        nameStage.style.transition = 'opacity 0.5s ease';
+        nameStage.style.opacity = '0';
+
+        setTimeout(() => {
+            // Hide name stage and show choice stage
+            nameStage.classList.add('hidden');
+            choiceStage.classList.remove('hidden');
+
+            // Fade in choice stage
+            choiceStage.style.opacity = '0';
+            choiceStage.style.transition = 'opacity 0.5s ease';
+            setTimeout(() => {
+                choiceStage.style.opacity = '1';
+            }, 100);
+
+            // Setup choice stage listeners ONLY if not already setup
+            if (!choiceListenersSetup) {
+                setupChoiceStageListeners(name);
+                choiceListenersSetup = true;
+            }
+        }, 500);
+    }
+
+    // Setup choice stage event listeners (ONLY ONCE)
+    function setupChoiceStageListeners(name) {
+        console.log("Setting up choice stage listeners...");
+        const uploadButton = document.getElementById('uploadButton');
+        const webcamButton = document.getElementById('webcamButton');
+        const backButton = document.getElementById('backButton');
+        const pictureInput = document.getElementById('pictureInput');
+
+        // Upload button click
+        uploadButton.addEventListener('click', function () {
+            console.log("Upload button clicked");
+            pictureInput.click();
+        });
+
+        // Picture input change
+        pictureInput.addEventListener('change', function (e) {
+            console.log("Picture input changed");
+            if (e.target.files && e.target.files[0]) {
+                handlePictureUpload(e.target.files[0], currentUserName);
+            }
+        });
+
+        // Webcam button click
+        webcamButton.addEventListener('click', function () {
+            console.log("Webcam button clicked");
+            startCameraBox(currentUserName);
+        });
+
+        // Back button click
+        backButton.addEventListener('click', function () {
+            console.log("Back button clicked");
+            showNameStage();
+        });
+    }
+
+    // Handle picture upload
+    function handlePictureUpload(file, name) {
+        console.log("Uploading picture...");
+
+        const formData = new FormData();
+        formData.append('picture', file);
+
+        // Show loading state
+        const uploadButton = document.getElementById('uploadButton');
+        uploadButton.textContent = "UPLOADING...";
+        uploadButton.disabled = true;
+
+        fetch('/upload_picture', {
+            method: 'POST',
+            body: formData
+        })
+                .then(response => response.json())
+                .then(data => {
+                    console.log('Upload response:', data);
+
+                    if (data.success && data.verification_result && data.verification_result.status === "approved") {
+                        showUploadResult(true, name);   // ACCESS GRANTED
+                    } else {
+                        showUploadResult(false, name);  // ACCESS DENIED
+                    }
+                })
+                .catch(error => {
+                    console.error('Error uploading picture:', error);
+                    showUploadResult(false, name);
+                })
+                .finally(() => {
+                    // Reset button
+                    uploadButton.textContent = "📷 UPLOAD PICTURE";
+                    uploadButton.disabled = false;
+                });
+    }
+
+    // Show upload result
+    function showUploadResult(success, name) {
+        const choiceStage = document.getElementById('choiceStage');
+        const uploadResultStage = document.getElementById('uploadResultStage');
+        const uploadResultText = document.getElementById('uploadResultText');
+        const outerRing = document.getElementById('uploadOuterRing');
+        const innerCircle = document.getElementById('uploadInnerCircle');
+        const iconContainer = uploadResultStage.querySelector('.svg-container');
+        const message = document.getElementById('uploadResultMessage');
+
+        // Hide choice stage
+        choiceStage.style.transition = 'opacity 0.5s ease';
+        choiceStage.style.opacity = '0';
+
+        setTimeout(() => {
+            choiceStage.classList.add('hidden');
+            uploadResultStage.classList.remove('hidden');
+
+            if (success) {
+                uploadResultText.textContent = "AUTHENTICATION SUCCESSFUL";
+                uploadResultText.className = "text-lg text-cyber-success";
+
+                // ✅ Green visuals
+                outerRing.className = "absolute inset-0 rounded-full border-4 border-cyber-success animate-pulse";
+                innerCircle.className = "absolute inset-4 rounded-full bg-cyber-success/20 flex items-center justify-center svg-container";
+                message.textContent = "ACCESS GRANTED • WELCOME TO THE SYSTEM";
+
+                // ✅ Icon
+                iconContainer.innerHTML = `
+    <svg class="w-12 h-12 text-cyber-success" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+    d="M5 13l4 4L19 7"></path>
+    </svg>`;
+
+                // Redirect to dashboard after 3 seconds
+                setTimeout(() => {
+                    window.location.href = '/dashboard';
+                }, 3000);
+
+            } else {
+                uploadResultText.textContent = "AUTHENTICATION FAILED";
+                uploadResultText.className = "text-lg text-cyber-error";
+
+                // ❌ Red visuals
+                outerRing.className = "absolute inset-0 rounded-full border-4 border-cyber-error animate-pulse";
+                innerCircle.className = "absolute inset-4 rounded-full bg-cyber-error/20 flex items-center justify-center svg-container";
+                message.textContent = "ACCESS DENIED • SECURITY LOCKED";
+
+                // ❌ Icon
+                iconContainer.innerHTML = `
+    <svg class="w-12 h-12 text-cyber-error" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+    d="M6 18L18 6M6 6l12 12"></path>
+    </svg>`;
+
+                // Reset to initial state after 3 seconds
+                setTimeout(() => {
+                    resetToInitialState();
+                }, 3000);
+            }
+
+            // Fade in
+            uploadResultStage.style.opacity = '0';
+            uploadResultStage.style.transition = 'opacity 0.5s ease';
+            setTimeout(() => {
+                uploadResultStage.style.opacity = '1';
+            }, 100);
+        }, 500);
+    }
+
+    function stopCamera() {
+        const videoElement = document.getElementById('videoElement');
+        const stream = videoElement.srcObject;
+        if (stream) {
+            const tracks = stream.getTracks();
+            tracks.forEach(track => track.stop());
+            videoElement.srcObject = null;
+        }
+    }
+
+    function showWebcamResult(success, name) {
+        const cameraBox = document.getElementById('cameraBox');
+        const webcamResultStage = document.getElementById('webcamResultStage');
+        const webcamResultText = document.getElementById('webcamResultText');
+        const outerRing = document.getElementById('webcamOuterRing');
+        const iconContainer = document.getElementById('webcamIconContainer');
+        const message = document.getElementById('webcamResultMessage');
+
+        // Fade out camera
+        cameraBox.style.transition = 'opacity 0.5s ease';
+        cameraBox.style.opacity = '0';
+
+        setTimeout(() => {
+            stopCamera(); // stop webcam stream
+            cameraBox.classList.add('hidden');
+            webcamResultStage.classList.remove('hidden');
+            webcamResultStage.style.opacity = '0';
+
+            if (success) {
+                // ✅ success visuals
+                webcamResultText.textContent = "AUTHENTICATION SUCCESSFUL";
+                webcamResultText.className = "text-lg text-cyber-success";
+
+                outerRing.className = "absolute inset-0 rounded-full border-4 border-cyber-success animate-pulse";
+                iconContainer.className = "absolute inset-4 rounded-full bg-cyber-success/20 flex items-center justify-center";
+                iconContainer.innerHTML = `
+    <svg class="w-12 h-12 text-cyber-success" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+    </svg>`;
+                message.textContent = "ACCESS GRANTED • WELCOME TO THE SYSTEM";
+
+                // Redirect to dashboard after 3 seconds
+                setTimeout(() => {
+                    window.location.href = '/dashboard';
+                }, 3000);
+
+            } else {
+                // ❌ failure visuals
+                webcamResultText.textContent = "AUTHENTICATION FAILED";
+                webcamResultText.className = "text-lg text-cyber-error";
+
+                outerRing.className = "absolute inset-0 rounded-full border-4 border-cyber-error animate-pulse";
+                iconContainer.className = "absolute inset-4 rounded-full bg-cyber-error/20 flex items-center justify-center";
+                iconContainer.innerHTML = `
+    <svg class="w-12 h-12 text-cyber-error" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+    d="M6 18L18 6M6 6l12 12"></path>
+    </svg>`;
+                message.textContent = "ACCESS DENIED • SECURITY LOCKED";
+
+                // Reset to initial state after 3 seconds
+                setTimeout(() => {
+                    resetToInitialState();
+                }, 3000);
+            }
+
+            // Fade in result stage
+            setTimeout(() => {
+                webcamResultStage.style.opacity = '1';
+            }, 100);
+        }, 500);
+    }
+
+    // Reset to initial state (clear name input and reset everything)
+    function resetToInitialState() {
+        window.location.reload();   // 👈 easiest reset
+    }
+
+
+    // Show name stage (for back button)
+    function showNameStage() {
+        const choiceStage = document.getElementById('choiceStage');
+        const nameStage = document.getElementById('nameStage');
+
+        // Hide choice stage
+        choiceStage.style.transition = 'opacity 0.5s ease';
+        choiceStage.style.opacity = '0';
+
+        setTimeout(() => {
+            choiceStage.classList.add('hidden');
+            nameStage.classList.remove('hidden');
+
+            // Fade in name stage
+            nameStage.style.opacity = '0';
+            nameStage.style.transition = 'opacity 0.5s ease';
+            setTimeout(() => {
+                nameStage.style.opacity = '1';
+            }, 100);
+        }, 500);
+    }
+
+    // Show camera box and start video
+    function startCameraBox(name) {
+        const choiceStage = document.getElementById('choiceStage');
+        const cameraBox = document.getElementById('cameraBox');
+        const userInfo = document.getElementById('userInfo');
+
+        // Hide choice stage with fade effect
+        choiceStage.style.transition = 'opacity 0.5s ease';
+        choiceStage.style.opacity = '0';
+
+        setTimeout(() => {
+            // Hide choice stage and show camera
+            choiceStage.classList.add('hidden');
+            cameraBox.classList.remove('hidden');
+
+            // Fade in camera box
+            cameraBox.style.opacity = '0';
+            cameraBox.style.transition = 'opacity 0.5s ease';
+            setTimeout(() => {
+                cameraBox.style.opacity = '1';
+            }, 100);
+
+            // Set user info
+            userInfo.textContent = `SUBJECT: ${name.toUpperCase()}`;
+
+            // Start camera
+            initializeCamera();
+
+            // Start timer
+            startTimer();
+
+            // Add face tracking effect
+            setTimeout(addFaceTrackingEffect, 2000);
+
+            // Start automatic face capture
+            setTimeout(startAutomaticCapture, 3000);
+        }, 500);
+    }
+
+    // Initialize camera with proper error handling
+    function initializeCamera() {
+        console.log("Initializing camera...");
+        const videoElement = document.getElementById('videoElement');
+
+        if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+            console.log("Media devices supported, requesting camera access...");
+
+            navigator.mediaDevices.getUserMedia({
+                video: {facingMode: 'user'},
+                audio: false
+            })
+                    .then(stream => {
+                        console.log("Camera access granted, setting up video stream...");
+                        videoElement.srcObject = stream;
+
+                        // Make sure video plays
+                        videoElement.onloadedmetadata = function () {
+                            console.log("Video metadata loaded, playing video...");
+                            videoElement.play()
+                                    .then(() => console.log("Video playback started successfully"))
+                                    .catch(err => console.error("Error starting video playback:", err));
+                        };
+                    })
+                    .catch(err => {
+                        console.error("Camera access denied:", err);
+                        alert("Camera access denied. Please allow camera access to use this feature.");
+                    });
+        } else {
+            console.error("getUserMedia not supported in this browser");
+            alert("Your browser does not support camera access. Please try a different browser.");
+        }
+    }
+
+    // Timer function
+    function startTimer() {
+        const timerElement = document.getElementById('scanTimer');
+        let seconds = 0;
+
+        setInterval(() => {
+            seconds++;
+            const hours = Math.floor(seconds / 3600).toString().padStart(2, '0');
+            const minutes = Math.floor((seconds % 3600) / 60).toString().padStart(2, '0');
+            const secs = (seconds % 60).toString().padStart(2, '0');
+            timerElement.textContent = `${hours}:${minutes}:${secs}`;
+        }, 1000);
+    }
+
+    // Add face tracking effect
+    function addFaceTrackingEffect() {
+        const canvas = document.getElementById('canvasElement');
+        const context = canvas.getContext('2d');
+        const video = document.getElementById('videoElement');
+        const scanStatus = document.getElementById('scanStatus');
+
+        // Set canvas dimensions
+        canvas.width = video.videoWidth || 400;
+        canvas.height = video.videoHeight || 300;
+
+        // Fake face tracking effect
+        function drawFaceTrackingEffect() {
+            context.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Center coordinates (simulating face detection)
+            const centerX = canvas.width / 2 + (Math.random() * 20 - 10);
+            const centerY = canvas.height / 2 + (Math.random() * 20 - 10);
+
+            // Draw tracking box
+            context.strokeStyle = 'rgba(0, 229, 255, 0.7)';
+            context.lineWidth = 2;
+            context.setLineDash([5, 3]);
+            context.strokeRect(centerX - 60, centerY - 80, 120, 160);
+
+            // Draw tracking points
+            const points = [
+                [centerX - 30, centerY - 30], // Left eye
+                [centerX + 30, centerY - 30], // Right eye
+                [centerX, centerY + 20],    // Nose
+                [centerX - 20, centerY + 40], // Left mouth
+                [centerX + 20, centerY + 40]  // Right mouth
+            ];
+
+            points.forEach(point => {
+                context.beginPath();
+                context.arc(point[0] + (Math.random() * 4 - 2), point[1] + (Math.random() * 4 - 2), 3, 0, Math.PI * 2);
+                context.fillStyle = 'rgba(0, 229, 255, 0.8)';
+                context.fill();
+            });
+
+            // Draw data points
+            context.font = '10px monospace';
+            context.fillStyle = 'rgba(0, 229, 255, 0.7)';
+            context.fillText(`X: ${Math.round(centerX)}  Y: ${Math.round(centerY)}`, 10, canvas.height - 30);
+            context.fillText(`CONFIDENCE: ${Math.round(70 + Math.random() * 25)}%`, 10, canvas.height - 15);
+
+            // Update scan status
+            const statuses = ['SCANNING...', 'ANALYZING FEATURES', 'MATCHING BIOMETRICS', 'VERIFYING IDENTITY'];
+            const currentTime = Math.floor(Date.now() / 1000);
+            scanStatus.textContent = statuses[currentTime % statuses.length];
+
+            requestAnimationFrame(drawFaceTrackingEffect);
+        }
+
+        drawFaceTrackingEffect();
+    }
+
+    // Automatic face capture function
+    function startAutomaticCapture() {
+        console.log("Starting automatic face capture...");
+        const scanStatus = document.getElementById('scanStatus');
+        const video = document.getElementById('videoElement');
+
+        // Wait until the video is ready (dimensions known)
+        if (!video.videoWidth || !video.videoHeight) {
+            console.log("Video not ready yet; waiting for loadeddata…");
+            video.addEventListener('loadeddata', () => {
+                setTimeout(startAutomaticCapture, 100); // tiny delay to settle
+            }, {once: true});
+            return;
+        }
+
+        const canvas = document.createElement('canvas');
+        const context = canvas.getContext('2d');
+
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+
+        context.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+        canvas.toBlob(async (blob) => {
+            if (!blob) {
+                console.error('Canvas toBlob returned null');
+                scanStatus.textContent = 'CAPTURE ERROR - RETRYING...';
+                scanStatus.classList.add('text-cyber-error');
+                setTimeout(startAutomaticCapture, 1500);
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('image', blob, 'capture.jpg');
+
+            try {
+                const response = await fetch('/capture_face', {method: 'POST', body: formData});
+                const data = await response.json();
+                console.log('Face capture response:', data);
+
+                if (data.success) {
+                    scanStatus.textContent = 'FACE CAPTURED SUCCESSFULLY';
+                    scanStatus.classList.remove('text-cyber-warning', 'text-cyber-error');
+                    scanStatus.classList.add('text-cyber-success');
+
+                    setTimeout(() => {
+                        scanStatus.textContent = 'BIOMETRIC SCAN COMPLETE';
+
+                        // Show webcam result after verification
+                        setTimeout(() => {
+                            if (data.success && data.verification_result && data.verification_result.status === "approved") {
+                                showWebcamResult(true, currentUserName);   // ACCESS GRANTED
+                            } else {
+                                showWebcamResult(false, currentUserName);  // ACCESS DENIED
+                            }
+
+                        }, 1000);
+                    }, 1500);
+                } else {
+                    scanStatus.textContent = 'NO FACE DETECTED - RETRYING...';
+                    scanStatus.classList.remove('text-cyber-success');
+                    scanStatus.classList.add('text-cyber-error');
+                    setTimeout(startAutomaticCapture, 1500);
+                }
+            } catch (error) {
+                console.error('Error during face capture:', error);
+                scanStatus.textContent = 'CAPTURE ERROR - RETRYING...';
+                scanStatus.classList.add('text-cyber-error');
+                setTimeout(startAutomaticCapture, 1500);
+            }
+        }, 'image/jpeg', 0.9);
+    }
+
+    // Initialize everything when DOM is loaded
+    document.addEventListener('DOMContentLoaded', function () {
+        console.log("DOM loaded, initializing JARVIS interface...");
+        initThreeJsBackground();
+        typeText();
+        handleNameInput();
+        handleFormSubmit();
+    });
+</script>
+</body>
+</html>

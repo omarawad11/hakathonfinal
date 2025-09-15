@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Face Recognition Logs</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+    * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    }
+
+    body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: #f5f7fa;
+    min-height: 100vh;
+    }
+
+    .navbar {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 1rem 2rem;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .navbar-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    max-width: 1200px;
+    margin: 0 auto;
+    }
+
+    .navbar-brand {
+    font-size: 1.5rem;
+    font-weight: 600;
+    }
+
+    .navbar-brand i {
+    margin-right: 10px;
+    }
+
+    .navbar-nav {
+    display: flex;
+    gap: 20px;
+    align-items: center;
+    }
+
+    .nav-link {
+    color: white;
+    text-decoration: none;
+    padding: 8px 16px;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    }
+
+    .nav-link:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: translateY(-2px);
+    }
+
+    .container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem;
+    }
+
+    .page-header {
+    background: white;
+    padding: 2rem;
+    border-radius: 15px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+    margin-bottom: 2rem;
+    }
+
+    .page-title {
+    font-size: 2rem;
+    color: #333;
+    margin-bottom: 0.5rem;
+    }
+
+    .page-subtitle {
+    color: #666;
+    font-size: 1rem;
+    }
+
+    .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+    }
+
+    .stat-card {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 15px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+    text-align: center;
+    transition: transform 0.3s ease;
+    }
+
+    .stat-card:hover {
+    transform: translateY(-5px);
+    }
+
+    .stat-icon {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+    }
+
+    .stat-icon.success { color: #28a745; }
+    .stat-icon.warning { color: #ffc107; }
+    .stat-icon.info { color: #17a2b8; }
+
+    .stat-number {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #333;
+    margin-bottom: 0.5rem;
+    }
+
+    .stat-label {
+    color: #666;
+    font-size: 0.9rem;
+    }
+
+    .table-container {
+    background: white;
+    border-radius: 15px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+    overflow: hidden;
+    }
+
+    .table-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 1.5rem 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    }
+
+    .table-title {
+    font-size: 1.3rem;
+    font-weight: 600;
+    }
+
+    .btn {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    }
+
+    .btn-primary {
+    background: #007bff;
+    color: white;
+    }
+
+    .btn-primary:hover {
+    background: #0056b3;
+    transform: translateY(-2px);
+    }
+
+    .table {
+    width: 100%;
+    border-collapse: collapse;
+    }
+
+    .table th,
+    .table td {
+    padding: 1rem;
+    text-align: left;
+    border-bottom: 1px solid #e9ecef;
+    }
+
+    .table th {
+    background: #f8f9fa;
+    font-weight: 600;
+    color: #333;
+    }
+
+    .table tbody tr:hover {
+    background: #f8f9fa;
+    }
+
+    .status-badge {
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    }
+
+    .status-success {
+    background: #d4edda;
+    color: #155724;
+    }
+
+    .status-danger {
+    background: #f8d7da;
+    color: #721c24;
+    }
+
+    .accuracy-bar {
+    width: 100px;
+    height: 8px;
+    background: #e9ecef;
+    border-radius: 4px;
+    overflow: hidden;
+    position: relative;
+    }
+
+    .accuracy-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #28a745, #20c997);
+    border-radius: 4px;
+    transition: width 0.3s ease;
+    }
+
+    .eye-btn {
+    background: #17a2b8;
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    }
+
+    .eye-btn:hover {
+    background: #138496;
+    transform: scale(1.1);
+    }
+
+    .no-data {
+    text-align: center;
+    padding: 3rem;
+    color: #666;
+    }
+
+    .no-data i {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    color: #ccc;
+    }
+
+    @media (max-width: 768px) {
+    .container {
+    padding: 1rem;
+    }
+
+    .navbar-content {
+    flex-direction: column;
+    gap: 1rem;
+    }
+
+    .table-container {
+    overflow-x: auto;
+    }
+
+    .stats-grid {
+    grid-template-columns: 1fr;
+    }
+    }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+    <div class="navbar-content">
+    <div class="navbar-brand">
+    <i class="fas fa-tachometer-alt"></i>
+    Face Recognition Dashboard
+    </div>
+    <div class="navbar-nav">
+    <a href="{{ url_for('dashboard_admin') }}" class="nav-link">
+    <i class="fas fa-chart-line"></i>
+    Dashboard
+    </a>
+    <a href="{{ url_for('users_admin') }}" class="nav-link">
+    <i class="fas fa-users"></i>
+    Manage Users
+    </a>
+    <a href="{{ url_for('logout_admin') }}" class="nav-link">
+    <i class="fas fa-sign-out-alt"></i>
+    Logout
+    </a>
+    </div>
+    </div>
+    </nav>
+
+    <div class="container">
+    <div class="page-header">
+    <h1 class="page-title">
+    <i class="fas fa-chart-line"></i>
+    Dashboard
+    </h1>
+    <p class="page-subtitle">Monitor face recognition logs and system activity</p>
+    </div>
+
+    <div class="stats-grid">
+    <div class="stat-card">
+    <div class="stat-icon success">
+    <i class="fas fa-check-circle"></i>
+    </div>
+    <div class="stat-number">{{ logs|selectattr('status', 'equalto', 0)|list|length }}</div>
+    <div class="stat-label">Successful Recognitions</div>
+    </div>
+    <div class="stat-card">
+    <div class="stat-icon warning">
+    <i class="fas fa-exclamation-triangle"></i>
+    </div>
+    <div class="stat-number">{{ logs|selectattr('status', 'equalto', 1)|list|length }}</div>
+    <div class="stat-label">Failed Attempts</div>
+    </div>
+    <div class="stat-card">
+    <div class="stat-icon info">
+    <i class="fas fa-clock"></i>
+    </div>
+    <div class="stat-number">{{ logs|length }}</div>
+    <div class="stat-label">Total Logs Today</div>
+    </div>
+    </div>
+
+    <div class="table-container">
+    <div class="table-header">
+    <h2 class="table-title">
+    <i class="fas fa-list"></i>
+    Recent Face Recognition Logs
+    </h2>
+    <a href="{{ url_for('users_admin') }}" class="btn btn-primary">
+    <i class="fas fa-users"></i>
+    Manage Users
+    </a>
+    </div>
+
+    {% if logs %}
+    <table class="table">
+    <thead>
+    <tr>
+    <th>ID</th>
+    <th>User Name</th>
+    <th>IP Address</th>
+    <th>Status</th>
+    <th>Accuracy</th>
+    <th>Date & Time</th>
+    <th>View Image</th>
+    </tr>
+    </thead>
+    <tbody>
+    {% for log in logs %}
+    <tr>
+    <td><strong>#{{ log.id }}</strong></td>
+    <td>
+    <i class="fas fa-user"></i>
+    {{ log.user_name }}
+    </td>
+    <td>
+    <i class="fas fa-globe"></i>
+    {{ log.ip }}
+    </td>
+    <td>
+    {% if log.status == 1 %}
+    <span class="status-badge status-success">
+    <i class="fas fa-check"></i> Success
+    </span>
+    {% else %}
+    <span class="status-badge status-danger">
+    <i class="fas fa-times"></i> Failed
+    </span>
+    {% endif %}
+    </td>
+    <td>
+    <div class="accuracy-bar">
+    <div class="accuracy-fill" style="width: {{ (log.accuracy * 100)|round }}%"></div>
+    </div>
+    <small>{{ "%.1f"|format(log.accuracy * 100) }}%</small>
+    </td>
+    <td>
+    <i class="fas fa-calendar"></i>
+    {{ log.date_time.strftime('%Y-%m-%d') }}<br>
+    <small>{{ log.date_time.strftime('%H:%M:%S') }}</small>
+    </td>
+    <td>
+    <button class="eye-btn" onclick="viewImage({{ log.id }})" title="View captured image">
+    <i class="fas fa-eye"></i>
+    </button>
+    </td>
+    </tr>
+    {% endfor %}
+    </tbody>
+    </table>
+    {% else %}
+    <div class="no-data">
+    <i class="fas fa-inbox"></i>
+    <h3>No logs available</h3>
+    <p>No face recognition logs found for today.</p>
+    </div>
+    {% endif %}
+    </div>
+    </div>
+
+    <script>
+    function viewImage(rowId) {
+    const imageUrl = `https://faces-logs.sfo3.digitaloceanspaces.com/${rowId}.jpg`;
+    window.open(imageUrl, '_blank', 'width=800,height=600,scrollbars=yes,resizable=yes');
+    }
+
+    // Add some animation when page loads
+    document.addEventListener('DOMContentLoaded', function() {
+    const cards = document.querySelectorAll('.stat-card');
+    cards.forEach((card, index) => {
+    setTimeout(() => {
+    card.style.opacity = '0';
+    card.style.transform = 'translateY(20px)';
+    card.style.transition = 'all 0.5s ease';
+
+    setTimeout(() => {
+    card.style.opacity = '1';
+    card.style.transform = 'translateY(0)';
+    }, 100);
+    }, index * 100);
+    });
+    });
+
+    // Auto-refresh page every 30 seconds
+    setTimeout(() => {
+    location.reload();
+    }, 30000);
+    </script>
+</body>
+</html>
